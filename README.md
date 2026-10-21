@@ -35,23 +35,25 @@ assumption in one line and choose conservatively.
 
 ## What the skill contains
 
+`SKILL.md` is a router, not a manual — 79 lines. Everything situational lives in
+`references/` and is read only when the task needs it.
+
+**`SKILL.md`**
+
 - **Step 0 — usage profile** (mandatory gate, click-budget table above).
-- **Step 1 — analyse the task:** document, action, actor, rights, document
-  state, trigger point, and the keywords derived from them.
-- **Step 2 — targeted search:** `agents.csv` (alias, trigger, `aktivovatelny`),
-  `views.csv`, `view-columns.csv`, `acl.csv` from an ODP export first, then
-  `grep` for the action; `<simpleaction action='runagent' …/>` is the cheapest
-  find of all. Report 1–5 elements, never an inventory.
-- **Step 3 — the reuse ladder (a–e)** with a click-count column; stop at the
-  first rung that satisfies Step 0.
-- **Step 4 — anti-patterns:** an emailed form whose button carries its own
-  API/business logic (it cannot load your script libraries), copied logic,
-  duplicate agents.
-- **Step 5 — verification:** ACL/roles, hide-when and
-  `showinbar='false'` reachability, client (Notes / web / Verse), and
-  **deploy state** — a fixed `.lss` in `01_scripts/` proves nothing about the
-  agent in the database.
-- **Two calibration examples**, one of them the original wrong answer.
+- **Steps 1–5** in one line each: analyse, targeted search, the reuse ladder
+  (a–e), the anti-patterns to refuse, verification.
+- **Output format** and the hard rules.
+
+**`references/lotus-notes.md`** — the Notes specifics: `AppProperties/`
+metadata (which CSV answers which question), the greps that pay off
+(`<simpleaction action='runagent' …/>` first of all), the verification
+checklist (access, visibility, client, deploy state), and pitfalls observed in
+real databases (duplicate aliases, a source file is not a design element, mailed
+buttons cannot load script libraries, test switches left on).
+
+**`references/examples.md`** — the two calibration cases: the frequency mistake
+and the fix that must not be copied, plus what they have in common.
 
 ## Install
 
@@ -85,12 +87,15 @@ skill and warns on the collision.
 
 ```text
 pi-reuse/
-├── package.json          # "pi": { "skills": ["./skills"] }
+├── package.json                  # "pi": { "skills": ["./skills"] }
 ├── skills/
 │   └── reuse/
-│       └── SKILL.md      # the skill
+│       ├── SKILL.md              # 79-line router: gate, steps, output, rules
+│       └── references/
+│           ├── lotus-notes.md    # search map, verification, pitfalls
+│           └── examples.md       # calibration cases
 ├── scripts/
-│   └── validate.mjs      # spec checks: name form/length, dir match, description routing
+│   └── validate.mjs              # spec + progressive-disclosure checks
 ├── LICENSE
 └── README.md
 ```
@@ -103,9 +108,14 @@ Dependency-free, runs on a bare checkout:
 npm test        # or: node scripts/validate.mjs
 ```
 
-Checks every `SKILL.md` under `skills/`: `---` delimiters, `name` in
-lowercase-hyphen form (≤ 64 chars, equal to its directory), `description`
-≤ 1024 chars and containing a routing phrase, non-empty body.
+Checks every `SKILL.md` under `skills/`:
+
+- `---` delimiters, non-empty body;
+- `name` in lowercase-hyphen form, ≤ 64 chars, equal to its directory;
+- `description` ≤ 1024 chars and containing a routing phrase (`Use when …`);
+- **progressive disclosure** — body ≤ 150 lines (soft warning above 100), and
+  every file under `references/` linked from the body, so no detail file is dead
+  weight.
 
 ## License
 

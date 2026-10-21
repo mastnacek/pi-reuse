@@ -10,12 +10,14 @@
  *   - `description` required, <= 1024 chars, and routing-bearing
  *     (must say when to load it, not just what it is)
  *   - body is not empty
+ *   - progressive disclosure: the body stays under a line budget, and every
+ *     file under `references/` is linked from the body (no orphan detail files)
  *
  * No dependencies: the checks are regex + length comparisons, so this runs on
  * a bare checkout without `npm install`.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -25,6 +27,11 @@ const SKILLS_DIR = join(ROOT, "skills");
 const NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_NAME = 64;
 const MAX_DESCRIPTION = 1024;
+
+// Progressive disclosure: the entry file is a router, detail belongs in
+// references/. Over the soft limit is a nudge, over the hard limit is a fail.
+const BODY_SOFT_LINES = 100;
+const BODY_HARD_LINES = 150;
 
 /** Every directory under skills/ that contains a SKILL.md. */
 function findSkillFiles(dir) {
@@ -64,6 +71,7 @@ function readFrontmatter(raw) {
 }
 
 const problems = [];
+const warnings = [];
 const checked = [];
 
 for (const file of findSkillFiles(SKILLS_DIR)) {
@@ -97,13 +105,40 @@ for (const file of findSkillFiles(SKILLS_DIR)) {
 
 	if (!body) problems.push(`${rel}: body is empty`);
 
-	checked.push({ rel, name, description: description.length });
+	const bodyLines = body.split("\n").length;
+	if (bodyLines > BODY_HARD_LINES) {
+		problems.push(
+			`${rel}: body is ${bodyLines} lines (hard limit ${BODY_HARD_LINES}) — move detail into references/`,
+		);
+	} else if (bodyLines > BODY_SOFT_LINES) {
+		warnings.push(`${rel}: body is ${bodyLines} lines (soft limit ${BODY_SOFT_LINES}) — consider references/`);
+	}
+
+	// Every detail file must be reachable from the body; an unlinked reference
+	// is dead weight the model will never read.
+	const referencesDir = join(dirname(file), "references");
+	if (existsSync(referencesDir)) {
+		for (const ref of readdirSync(referencesDir)) {
+			if (!statSync(join(referencesDir, ref)).isFile()) continue;
+			if (!body.includes(`references/${ref}`)) {
+				problems.push(`${rel}: references/${ref} is never linked from the body`);
+			}
+		}
+	}
+
+	checked.push({ rel, name, description: description.length, bodyLines });
 }
 
 if (checked.length === 0) problems.push("no SKILL.md found under skills/");
 
 for (const skill of checked) {
-	console.log(`ok  ${skill.rel}  name=${skill.name}  description=${skill.description} chars`);
+	console.log(
+		`ok  ${skill.rel}  name=${skill.name}  description=${skill.description} chars  body=${skill.bodyLines} lines`,
+	);
+}
+
+if (warnings.length > 0) {
+	for (const warning of warnings) console.warn(`⚠ ${warning}`);
 }
 
 if (problems.length > 0) {

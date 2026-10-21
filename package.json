@@ -1,6 +1,6 @@
 {
 	"name": "pi-reuse",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Pi skill package. Reuse-first design analysis for IBM Notes/Domino: finds the element that already does the job and returns the smallest change, behind a mandatory usage-frequency gate that decides whether a doclink, an existing action, or a thin wrapper is the right mechanism.",
 	"type": "module",
 	"keywords": [

@@ -1,0 +1,42 @@
+{
+	"name": "pi-reuse",
+	"version": "0.1.0",
+	"description": "Pi skill package. Reuse-first design analysis for IBM Notes/Domino: finds the element that already does the job and returns the smallest change, behind a mandatory usage-frequency gate that decides whether a doclink, an existing action, or a thin wrapper is the right mechanism.",
+	"type": "module",
+	"keywords": [
+		"pi",
+		"pi-package",
+		"pi-skill",
+		"lotus-notes",
+		"domino",
+		"lotusscript",
+		"design-review",
+		"reuse"
+	],
+	"author": "mastnacek",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mastnacek/pi-reuse.git"
+	},
+	"homepage": "https://github.com/mastnacek/pi-reuse#readme",
+	"bugs": {
+		"url": "https://github.com/mastnacek/pi-reuse/issues"
+	},
+	"files": [
+		"skills",
+		"scripts",
+		"README.md",
+		"LICENSE",
+		"package.json"
+	],
+	"pi": {
+		"skills": [
+			"./skills"
+		]
+	},
+	"scripts": {
+		"validate": "node scripts/validate.mjs",
+		"test": "node scripts/validate.mjs"
+	}
+}
